@@ -2,7 +2,7 @@
 
 A modern stock price tracking application that provides real-time stock prices and historical data visualization. Built with Next.js for the frontend and Flask for the backend, featuring Redis caching for optimal performance.
 
-![Project Banner](./screenshots/banner.png)
+![Banner](https://github.com/user-attachments/assets/d34fb1e9-1c2b-47a0-873a-070cf3a1709d)
 
 ## ✨ Features
 
