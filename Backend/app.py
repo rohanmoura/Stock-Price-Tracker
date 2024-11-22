@@ -19,6 +19,11 @@ redis_client = redis.Redis(
 )
 REDIS_EXPIRATION = 300
 
+REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379')
+
+port = int(os.getenv('PORT', 10000))
+host = '0.0.0.0'
+
 def initialize_database():
     db_file = "./stocks.db"
     
@@ -88,4 +93,4 @@ def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host=host, port=port, debug=False)
