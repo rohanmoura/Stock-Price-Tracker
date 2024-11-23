@@ -16,7 +16,7 @@ interface StockData {
 }
 
 const ERROR_MESSAGES = {
-  NOT_FOUND: (symbol: string) => 
+  NOT_FOUND: (symbol: string) =>
     `Stock "${symbol}" not found! Please try with valid symbols like AAPL, GOOGL, TSLA, etc.`,
   SERVER_ERROR: 'Oops! Server error. Please try again later.',
   NETWORK_ERROR: 'No internet connection. Please check your network and try again.',
@@ -33,19 +33,22 @@ export async function getStockPrice(symbol: string): Promise<StockData> {
     const response = await axios.get<StockData>(`${API_BASE_URL}/api/stock-price/${symbol}`);
     console.log('API Response:', response.data);
     return response.data;
-  } catch (err: any) {
-    console.error('API Error:', err);
-    if (err.response?.status === 404) {
-      throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
-    } else if (err.response?.status === 500) {
-      throw new Error(ERROR_MESSAGES.SERVER_ERROR);
-    } else if (!navigator.onLine) {
-      throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
-    } else {
-      throw new Error(ERROR_MESSAGES.DEFAULT);
+  } catch (error: unknown) {
+    console.error('API Error:', error);
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 404) {
+        throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
+      } else if (error.response?.status === 500) {
+        throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+      }
     }
+    if (!navigator.onLine) {
+      throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+    }
+    throw new Error(ERROR_MESSAGES.DEFAULT);
   }
 }
+
 
 export async function checkApiHealth(): Promise<boolean> {
   try {

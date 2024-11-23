@@ -35,13 +35,14 @@ export default function SimplifiedStockViewer() {
     setError(null);
     
     try {
-      console.log('Searching for:', searchTerm);
       const data = await getStockPrice(searchTerm.toUpperCase());
-      console.log('Received data:', data);
       setCurrentStock(data);
-    } catch (err: any) {
-      console.error('Search error:', err);
-      setError(err.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
       setCurrentStock(null);
     } finally {
       setIsLoading(false);
