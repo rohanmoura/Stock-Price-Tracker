@@ -6,6 +6,7 @@ from mock_data import generate_mock_data
 import os
 from datetime import datetime, timedelta
 import logging
+from dotenv import load_dotenv
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -102,7 +103,7 @@ if __name__ == "__main__":
         initialize_database()
         logger.info("Database initialization completed")
         
-        port = int(os.getenv('PORT', 5000))
+        port = int(os.getenv('PORT', 10000))
         logger.info(f"Starting server on port {port}")
         app.run(host='0.0.0.0', port=port, debug=True)
         
