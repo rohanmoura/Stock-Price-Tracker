@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface HistoricalPrice {
   price: number;
@@ -29,9 +29,12 @@ export async function getStockPrice(symbol: string): Promise<StockData> {
   }
 
   try {
-    const response = await axios.get<StockData>(`${API_BASE_URL}/stock-price/${symbol}`);
+    console.log('Calling API:', `${API_BASE_URL}/api/stock-price/${symbol}`);
+    const response = await axios.get<StockData>(`${API_BASE_URL}/api/stock-price/${symbol}`);
+    console.log('API Response:', response.data);
     return response.data;
   } catch (err: any) {
+    console.error('API Error:', err);
     if (err.response?.status === 404) {
       throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
     } else if (err.response?.status === 500) {

@@ -35,18 +35,13 @@ export default function SimplifiedStockViewer() {
     setError(null);
     
     try {
+      console.log('Searching for:', searchTerm);
       const data = await getStockPrice(searchTerm.toUpperCase());
+      console.log('Received data:', data);
       setCurrentStock(data);
     } catch (err: any) {
-      if (err.response?.status === 404) {
-        setError(`Stock "${searchTerm}" not found! Please try with valid symbols like AAPL, GOOGL, TSLA, etc.`);
-      } else if (err.response?.status === 500) {
-        setError('Oops! Server error. Please try again later.');
-      } else if (!navigator.onLine) {
-        setError('No internet connection. Please check your network and try again.');
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
+      console.error('Search error:', err);
+      setError(err.message);
       setCurrentStock(null);
     } finally {
       setIsLoading(false);
