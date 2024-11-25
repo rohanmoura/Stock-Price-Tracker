@@ -4,9 +4,12 @@ from models import StockPrice
 from database import Session, create_database
 from mock_data import generate_mock_data
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -15,40 +18,27 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
-        "origins": [
-            "http://localhost:3000",
-            "https://your-vercel-frontend.vercel.app"
-        ],
+        "origins": "*",  # Allow all origins for now
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type"]
     }
 })
 
-# Simple cache implementation
-cache = {}
-CACHE_EXPIRY = 300  # 5 minutes
-
 def initialize_database():
-    db_file = os.path.join(os.getcwd(), "stocks.db")
-    logger.info("Starting database initialization...")
-    
     try:
-        if not os.path.exists(db_file):
-            logger.info("Database file not found, creating new database...")
-            create_database()
-            
+        create_database()
         session = Session()
         stock_count = session.query(StockPrice).count()
-        logger.info(f"Current stock count in database: {stock_count}")
         
         if stock_count == 0:
             logger.info("No stocks found, generating mock data...")
             generate_mock_data()
             logger.info("Mock data generation completed")
-        session.close()
         
+        session.close()
+        return True
     except Exception as e:
-        logger.error(f"Error during database initialization: {str(e)}")
+        logger.error(f"Database initialization error: {str(e)}")
         raise e
 
 @app.route('/api/stock-price/<symbol>', methods=['GET'])
@@ -57,16 +47,12 @@ def get_stock_price(symbol):
     symbol = symbol.upper()
     
     try:
-        # Auto-initialize database if empty
         session = Session()
-        stock_count = session.query(StockPrice).count()
         
-        # If database is empty, generate mock data
-        if stock_count == 0:
-            logger.info("Database empty, generating mock data...")
-            generate_mock_data()
+        # Auto-initialize if empty
+        if session.query(StockPrice).count() == 0:
+            initialize_database()
         
-        # Get stock data
         current_price = session.query(StockPrice)\
             .filter(StockPrice.symbol == symbol, StockPrice.is_current == True)\
             .first()
@@ -113,7 +99,7 @@ if __name__ == "__main__":
         
         port = int(os.getenv('PORT', 10000))
         logger.info(f"Starting server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port)
         
     except Exception as e:
         logger.error(f"Application startup failed: {str(e)}")

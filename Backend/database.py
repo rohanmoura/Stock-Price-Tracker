@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from models import Base
 import os
 
-DATABASE_URL = "sqlite:///./stocks.db"
+DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./stocks.db')
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
