@@ -6,17 +6,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Use absolute path for SQLite database in tmp directory
-db_path = "/tmp/stocks.db"
-DATABASE_URL = f"sqlite:///{db_path}"
-
+# Use in-memory SQLite database
+DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
 
 def create_database():
     try:
         Base.metadata.create_all(engine)
-        logger.info(f"Database created successfully at: {db_path}")
+        logger.info("In-memory database created successfully")
         return True
     except Exception as e:
         logger.error(f"Error creating database: {str(e)}")
