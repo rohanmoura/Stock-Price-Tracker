@@ -2,6 +2,8 @@ from models import StockPrice
 from database import Session
 import random
 from datetime import datetime, timedelta 
+import logging
+
 
 STOCKS = [
     {
@@ -92,13 +94,13 @@ STOCKS = [
 
 
 
-import logging
 
 # Configure basic logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+logger = logging.getLogger(__name__)
 
 def generate_mock_data():
     """
@@ -108,31 +110,42 @@ def generate_mock_data():
     try:
         # Clear existing data
         session.query(StockPrice).delete()
+        session.commit()
+        logger.info("Cleared existing data")
         
         for stock in STOCKS:
-            # Add current price
-            current_price = StockPrice(
-                symbol=stock["symbol"],
-                price=stock["current_price"],
-                timestamp=datetime.strptime(stock["timestamp"], "%Y-%m-%d %H:%M:%S"),
-                is_current=True
-            )
-            session.add(current_price)
-            
-            # Add historical prices
-            for hist_price in stock["historical_prices"]:
-                historical = StockPrice(
+            try:
+                # Add current price
+                current_price = StockPrice(
                     symbol=stock["symbol"],
-                    price=hist_price["price"],
-                    timestamp=datetime.strptime(hist_price["timestamp"], "%Y-%m-%d %H:%M:%S"),
-                    is_current=False
+                    price=stock["current_price"],
+                    timestamp=datetime.strptime(stock["timestamp"], "%Y-%m-%d %H:%M:%S"),
+                    is_current=True
                 )
-                session.add(historical)
+                session.add(current_price)
+                
+                # Add historical prices
+                for hist_price in stock["historical_prices"]:
+                    historical = StockPrice(
+                        symbol=stock["symbol"],
+                        price=hist_price["price"],
+                        timestamp=datetime.strptime(hist_price["timestamp"], "%Y-%m-%d %H:%M:%S"),
+                        is_current=False
+                    )
+                    session.add(historical)
+                
+                logger.info(f"Added data for {stock['symbol']}")
+                
+            except Exception as e:
+                logger.error(f"Error adding {stock['symbol']}: {str(e)}")
+                continue
         
         session.commit()
+        logger.info("Mock data generation completed successfully")
         return {"status": "success", "message": "Mock data generated successfully"}
     except Exception as e:
         session.rollback()
+        logger.error(f"Error in generate_mock_data: {str(e)}")
         raise e
     finally:
         session.close()

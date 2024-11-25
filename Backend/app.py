@@ -48,14 +48,22 @@ def get_stock_price(symbol):
     
     try:
         session = Session()
+        logger.info("Database session created")
         
         # Auto-initialize if empty
-        if session.query(StockPrice).count() == 0:
+        count = session.query(StockPrice).count()
+        logger.info(f"Current record count: {count}")
+        
+        if count == 0:
+            logger.info("Initializing database...")
             initialize_database()
+            logger.info("Database initialized")
         
         current_price = session.query(StockPrice)\
             .filter(StockPrice.symbol == symbol, StockPrice.is_current == True)\
             .first()
+        
+        logger.info(f"Current price query result: {current_price}")
         
         if not current_price:
             return jsonify({"error": f"Stock {symbol} not found"}), 404
@@ -65,6 +73,8 @@ def get_stock_price(symbol):
             .order_by(StockPrice.timestamp.desc())\
             .limit(5)\
             .all()
+        
+        logger.info(f"Historical prices count: {len(historical_prices)}")
         
         response_data = {
             "id": current_price.id,
@@ -81,11 +91,15 @@ def get_stock_price(symbol):
         }
         
         session.close()
+        logger.info("Successfully processed request")
         return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"Error: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500
+        logger.error(f"Detailed error: {str(e)}", exc_info=True)
+        return jsonify({
+            "error": "Internal server error",
+            "details": str(e)
+        }), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
