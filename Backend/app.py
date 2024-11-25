@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify
 from flask_cors import CORS
 from models import StockPrice
@@ -27,7 +26,7 @@ cache = {}
 CACHE_EXPIRY = 300  # 5 minutes
 
 def initialize_database():
-    db_file = "./stocks.db"
+    db_file = os.path.join(os.getcwd(), "stocks.db")
     logger.info("Starting database initialization...")
     
     try:

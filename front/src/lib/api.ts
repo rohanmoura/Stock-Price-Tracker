@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:10000';
 
 interface HistoricalPrice {
   price: number;
@@ -34,18 +34,14 @@ export async function getStockPrice(symbol: string): Promise<StockData> {
     console.log('API Response:', response.data);
     return response.data;
   } catch (error: unknown) {
-    console.error('API Error:', error);
     if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
-      } else if (error.response?.status === 500) {
-        throw new Error(ERROR_MESSAGES.SERVER_ERROR);
-      }
+      console.error('API Error Details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        headers: error.response?.headers
+      });
     }
-    if (!navigator.onLine) {
-      throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
-    }
-    throw new Error(ERROR_MESSAGES.DEFAULT);
+    throw error;
   }
 }
 
