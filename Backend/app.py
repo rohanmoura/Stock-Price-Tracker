@@ -57,15 +57,21 @@ def get_stock_price(symbol):
     symbol = symbol.upper()
     
     try:
+        # Auto-initialize database if empty
         session = Session()
+        stock_count = session.query(StockPrice).count()
+        
+        # If database is empty, generate mock data
+        if stock_count == 0:
+            logger.info("Database empty, generating mock data...")
+            generate_mock_data()
+        
+        # Get stock data
         current_price = session.query(StockPrice)\
             .filter(StockPrice.symbol == symbol, StockPrice.is_current == True)\
             .first()
         
-        logger.info(f"Database query result for {symbol}: {current_price}")
-            
         if not current_price:
-            logger.warning(f"Stock {symbol} not found")
             return jsonify({"error": f"Stock {symbol} not found"}), 404
             
         historical_prices = session.query(StockPrice)\
@@ -88,12 +94,11 @@ def get_stock_price(symbol):
             ]
         }
         
-        logger.info(f"Sending response for {symbol}: {response_data}")
         session.close()
         return jsonify(response_data)
         
     except Exception as e:
-        logger.error(f"Error processing request for {symbol}: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         return jsonify({"error": "Internal server error"}), 500
 
 @app.route('/api/health', methods=['GET'])

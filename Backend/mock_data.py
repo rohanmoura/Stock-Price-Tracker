@@ -106,8 +106,11 @@ def generate_mock_data():
     """
     session = Session()
     try:
+        # Clear existing data
+        session.query(StockPrice).delete()
+        
         for stock in STOCKS:
-            # Current price insert
+            # Add current price
             current_price = StockPrice(
                 symbol=stock["symbol"],
                 price=stock["current_price"],
@@ -116,7 +119,7 @@ def generate_mock_data():
             )
             session.add(current_price)
             
-            # Historical prices insert
+            # Add historical prices
             for hist_price in stock["historical_prices"]:
                 historical = StockPrice(
                     symbol=stock["symbol"],
@@ -127,8 +130,7 @@ def generate_mock_data():
                 session.add(historical)
         
         session.commit()
-        return {"message": "Mock data added successfully"}
-        
+        return {"status": "success", "message": "Mock data generated successfully"}
     except Exception as e:
         session.rollback()
         raise e
