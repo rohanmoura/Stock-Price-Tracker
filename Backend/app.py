@@ -15,9 +15,17 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
+def initialize_database():
+    try:
+        create_database()
+        generate_mock_data()
+        return True
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+        return False
+
 # Initialize database on startup
-create_database()
-generate_mock_data()
+initialize_database()
 
 @app.before_request
 def before_request():
