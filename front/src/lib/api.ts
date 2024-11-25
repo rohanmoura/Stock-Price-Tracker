@@ -29,19 +29,16 @@ export async function getStockPrice(symbol: string): Promise<StockData> {
   }
 
   try {
-    console.log('Calling API:', `${API_BASE_URL}/api/stock-price/${symbol}`);
     const response = await axios.get<StockData>(`${API_BASE_URL}/api/stock-price/${symbol}`);
-    console.log('API Response:', response.data);
     return response.data;
-  } catch (error: unknown) {
+  } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('API Error Details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers
-      });
+      if (error.response?.status === 404) {
+        throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
+      }
+      throw new Error(ERROR_MESSAGES.SERVER_ERROR);
     }
-    throw error;
+    throw new Error(ERROR_MESSAGES.DEFAULT);
   }
 }
 
