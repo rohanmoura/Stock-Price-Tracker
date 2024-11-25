@@ -34,11 +34,11 @@ export async function getStockPrice(symbol: string): Promise<StockData> {
   } catch (error) {
     if (axios.isAxiosError(error)) {
       if (error.response?.status === 404) {
-        throw new Error(ERROR_MESSAGES.NOT_FOUND(symbol));
+        throw new Error(`Stock ${symbol} not found`);
       }
-      throw new Error(ERROR_MESSAGES.SERVER_ERROR);
+      throw new Error('Failed to fetch stock data');
     }
-    throw new Error(ERROR_MESSAGES.DEFAULT);
+    throw error;
   }
 }
 
