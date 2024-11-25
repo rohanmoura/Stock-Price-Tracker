@@ -26,17 +26,31 @@ CORS(app, resources={
 
 def initialize_database():
     try:
+        logger.info("Starting database initialization...")
+        # Create database and tables
         create_database()
+        
+        # Create a new session
         session = Session()
-        stock_count = session.query(StockPrice).count()
         
-        if stock_count == 0:
-            logger.info("No stocks found, generating mock data...")
-            generate_mock_data()
-            logger.info("Mock data generation completed")
-        
-        session.close()
-        return True
+        try:
+            # Check if tables exist
+            stock_count = session.query(StockPrice).count()
+            logger.info(f"Current stock count: {stock_count}")
+            
+            if stock_count == 0:
+                logger.info("No stocks found, generating mock data...")
+                generate_mock_data()
+                logger.info("Mock data generation completed")
+            
+            session.close()
+            return True
+            
+        except Exception as inner_e:
+            logger.error(f"Error during database operations: {str(inner_e)}")
+            session.close()
+            raise inner_e
+            
     except Exception as e:
         logger.error(f"Database initialization error: {str(e)}")
         raise e

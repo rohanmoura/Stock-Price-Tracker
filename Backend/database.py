@@ -2,14 +2,13 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models import Base
+import logging
 
-# Use absolute path for SQLite database
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, "stocks.db")
+logger = logging.getLogger(__name__)
+
+# Use absolute path for SQLite database in tmp directory
+db_path = "/tmp/stocks.db"
 DATABASE_URL = f"sqlite:///{db_path}"
-
-# Make sure database directory exists
-os.makedirs(BASE_DIR, exist_ok=True)
 
 engine = create_engine(DATABASE_URL)
 Session = sessionmaker(bind=engine)
@@ -17,8 +16,8 @@ Session = sessionmaker(bind=engine)
 def create_database():
     try:
         Base.metadata.create_all(engine)
-        print("Database created successfully at:", db_path)
+        logger.info(f"Database created successfully at: {db_path}")
         return True
     except Exception as e:
-        print(f"Error creating database: {e}")
+        logger.error(f"Error creating database: {str(e)}")
         return False
